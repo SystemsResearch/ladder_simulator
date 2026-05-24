@@ -74,8 +74,28 @@ fig = px.imshow(
     labels=dict(x="Final position", y="Team", color="Probability (%)"),
     text_auto=".1f",
     aspect="auto",
+    zmin=0,
+    zmax=100,
+    color_continuous_scale=[
+        [0.00, "#050505"],
+        [0.10, "#111827"],
+        [0.35, "#1d4ed8"],
+        [0.65, "#22c55e"],
+        [1.00, "#fde047"],
+    ],
 )
-fig.update_layout(height=620)
+fig.update_traces(
+    texttemplate="%{z:.1f}",
+    hovertemplate="Team: %{y}<br>Position: %{x}<br>Probability: %{z:.1f}%<extra></extra>",
+)
+fig.update_layout(
+    height=620,
+    paper_bgcolor="#000000",
+    plot_bgcolor="#000000",
+    font_color="#f8fafc",
+    coloraxis_colorbar=dict(title="Probability (%)"),
+)
+fig.update_xaxes(side="top")
 st.plotly_chart(fig, use_container_width=True)
 
 st.subheader("Summary")
