@@ -10,7 +10,7 @@ A Streamlit app for simulating final Super Rugby Pacific ladder positions using 
   - home win with/without try bonus and losing bonus
   - away win with/without try bonus and losing bonus
   - draw with/without try bonuses
-- Tie-breaker: current points differential is frozen and used after competition points.
+- Tie-breaker: points differential (PD) is used after competition points. It is a largely frozen PD: when a team wins, their PD increases by 1, and if they lose it decreases by 1.
 - Rows are sorted by expected final finishing position.
 
 ## Run locally
@@ -20,6 +20,6 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-## Deploy
+## Deployed version
 
-Push this repository to GitHub, then deploy it through Streamlit Community Cloud.
+You can access the deployed version here: https://ladder-simulator.streamlit.app/

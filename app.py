@@ -8,7 +8,7 @@ from simulation import default_fixture_distribution, simulate_final_standings
 st.set_page_config(page_title="Super Rugby Pacific Simulator", layout="wide")
 
 st.title("Super Rugby Pacific final standings simulator")
-st.caption("Monte Carlo simulation using discrete ladder-point outcomes, frozen current points differential as tie-breaker.")
+st.caption("Monte Carlo simulation using discrete ladder-point outcomes, and a simplified points differential as tie-breaker. Developed by Dimitri Perrin.")
 
 standings = pd.read_csv("data/standings.csv")
 fixtures = pd.read_csv("data/fixtures.csv")
