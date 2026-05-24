@@ -1,6 +1,6 @@
 # Super Rugby Pacific final standings simulator
 
-A Streamlit app for simulating final Super Rugby Pacific ladder positions using Monte Carlo simulation.
+Monte Carlo simulation using discrete ladder-point outcomes, and a simplified points differential as tie-breaker. Developed by Dimitri Perrin.
 
 ## Model
 
@@ -10,7 +10,10 @@ A Streamlit app for simulating final Super Rugby Pacific ladder positions using 
   - home win with/without try bonus and losing bonus
   - away win with/without try bonus and losing bonus
   - draw with/without try bonuses
-- Tie-breaker: points differential (PD) is used after competition points. It is a largely frozen PD: when a team wins, their PD increases by 1, and if they lose it decreases by 1.
+- Tie-breakers are applied after competition points in this order:
+  1. total number of wins
+  2. points differential (PD)
+- PD is simplified: when a team wins, their PD increases by 1, and if they lose it decreases by 1.
 - Rows are sorted by expected final finishing position.
 
 ## Run locally

@@ -3,7 +3,15 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from outcomes import OUTCOME_CODES, HOME_POINTS, AWAY_POINTS, HOME_PD_DELTA, AWAY_PD_DELTA
+from outcomes import (
+    OUTCOME_CODES,
+    HOME_POINTS,
+    AWAY_POINTS,
+    HOME_WIN_DELTA,
+    AWAY_WIN_DELTA,
+    HOME_PD_DELTA,
+    AWAY_PD_DELTA,
+)
 
 
 def normalise_probs(probs: np.ndarray) -> np.ndarray:
@@ -61,8 +69,11 @@ def simulate_final_standings(
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Return finishing-position probabilities and summary stats.
 
-    Tie-breaker: points differential starts from current PD, then receives a
-    small result-based adjustment: +1 for a win, -1 for a loss, unchanged for a draw.
+    Tie-breakers: competition points, then total wins, then simplified points differential.
+
+    Wins start from the current ladder values. Each simulated win adds one win.
+    Points differential starts from current PD, then receives a small result-based
+    adjustment: +1 for a win, -1 for a loss, unchanged for a draw.
     """
     rng = np.random.default_rng(seed)
 
@@ -70,11 +81,20 @@ def simulate_final_standings(
     team_to_idx = {team: i for i, team in enumerate(teams)}
     n_teams = len(teams)
 
+    required_columns = {"Team", "Points", "Wins", "PD"}
+    missing_columns = required_columns - set(standings.columns)
+    if missing_columns:
+        missing = ", ".join(sorted(missing_columns))
+        raise ValueError(f"standings.csv is missing required column(s): {missing}")
+
     points = np.tile(standings["Points"].to_numpy(dtype=float), (n_sims, 1))
+    wins = np.tile(standings["Wins"].to_numpy(dtype=float), (n_sims, 1))
     pdiff = np.tile(standings["PD"].to_numpy(dtype=float), (n_sims, 1))
 
     home_add = np.asarray(HOME_POINTS, dtype=float)
     away_add = np.asarray(AWAY_POINTS, dtype=float)
+    home_win_add = np.asarray(HOME_WIN_DELTA, dtype=float)
+    away_win_add = np.asarray(AWAY_WIN_DELTA, dtype=float)
     home_pd_add = np.asarray(HOME_PD_DELTA, dtype=float)
     away_pd_add = np.asarray(AWAY_PD_DELTA, dtype=float)
 
@@ -88,15 +108,17 @@ def simulate_final_standings(
 
         points[:, home_idx] += home_add[sampled]
         points[:, away_idx] += away_add[sampled]
+        wins[:, home_idx] += home_win_add[sampled]
+        wins[:, away_idx] += away_win_add[sampled]
         pdiff[:, home_idx] += home_pd_add[sampled]
         pdiff[:, away_idx] += away_pd_add[sampled]
 
     position_counts = np.zeros((n_teams, n_teams), dtype=int)
 
-    # Sort by competition points, then adjusted points differential, both descending.
+    # Sort by competition points, then total wins, then adjusted points differential.
+    # np.lexsort uses the last key as primary; negative values give descending order.
     for s in range(n_sims):
-        order = np.lexsort((-pdiff[s], -points[s]))
-        # np.lexsort uses last key primary; with negative values this gives descending order.
+        order = np.lexsort((-pdiff[s], -wins[s], -points[s]))
         for pos, team_idx in enumerate(order):
             position_counts[team_idx, pos] += 1
 
