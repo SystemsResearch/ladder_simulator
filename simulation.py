@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from outcomes import OUTCOME_CODES, HOME_POINTS, AWAY_POINTS
+from outcomes import OUTCOME_CODES, HOME_POINTS, AWAY_POINTS, HOME_PD_DELTA, AWAY_PD_DELTA
 
 
 def normalise_probs(probs: np.ndarray) -> np.ndarray:
@@ -61,7 +61,8 @@ def simulate_final_standings(
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Return finishing-position probabilities and summary stats.
 
-    Tie-breaker: current points differential is frozen and used after competition points.
+    Tie-breaker: points differential starts from current PD, then receives a
+    small result-based adjustment: +1 for a win, -1 for a loss, unchanged for a draw.
     """
     rng = np.random.default_rng(seed)
 
@@ -70,10 +71,12 @@ def simulate_final_standings(
     n_teams = len(teams)
 
     points = np.tile(standings["Points"].to_numpy(dtype=float), (n_sims, 1))
-    pdiff = standings["PD"].to_numpy(dtype=float)
+    pdiff = np.tile(standings["PD"].to_numpy(dtype=float), (n_sims, 1))
 
     home_add = np.asarray(HOME_POINTS, dtype=float)
     away_add = np.asarray(AWAY_POINTS, dtype=float)
+    home_pd_add = np.asarray(HOME_PD_DELTA, dtype=float)
+    away_pd_add = np.asarray(AWAY_PD_DELTA, dtype=float)
 
     for fixture_idx, row in fixtures.iterrows():
         home_idx = team_to_idx[row["Home"]]
@@ -85,12 +88,14 @@ def simulate_final_standings(
 
         points[:, home_idx] += home_add[sampled]
         points[:, away_idx] += away_add[sampled]
+        pdiff[:, home_idx] += home_pd_add[sampled]
+        pdiff[:, away_idx] += away_pd_add[sampled]
 
     position_counts = np.zeros((n_teams, n_teams), dtype=int)
 
-    # Sort by competition points, then frozen points differential, both descending.
+    # Sort by competition points, then adjusted points differential, both descending.
     for s in range(n_sims):
-        order = np.lexsort((-pdiff, -points[s]))
+        order = np.lexsort((-pdiff[s], -points[s]))
         # np.lexsort uses last key primary; with negative values this gives descending order.
         for pos, team_idx in enumerate(order):
             position_counts[team_idx, pos] += 1

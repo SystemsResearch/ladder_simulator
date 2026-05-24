@@ -1,8 +1,6 @@
-# Rugby - Final standings simulator
+# Super Rugby Pacific final standings simulator
 
-A Streamlit app for simulating final ladder positions using Monte Carlo simulation.
-
-This is initially set up for Super Rugby Pacific (ladder, remaining games, bonus point and tie-breaker rules)
+A Streamlit app for simulating final Super Rugby Pacific ladder positions using Monte Carlo simulation.
 
 ## Model
 
@@ -21,3 +19,7 @@ This is initially set up for Super Rugby Pacific (ladder, remaining games, bonus
 pip install -r requirements.txt
 streamlit run app.py
 ```
+
+## Deploy
+
+Push this repository to GitHub, then deploy it through Streamlit Community Cloud.
